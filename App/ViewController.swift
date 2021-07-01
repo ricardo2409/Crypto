@@ -14,6 +14,7 @@ class ViewController: UIViewController {
     var viewModel = ViewModel()
     let tableView = UITableView()
     var cryptosArray = [Crypto]()
+    let refreshControl = UIRefreshControl()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,6 +23,9 @@ class ViewController: UIViewController {
         tableView.register(CustomCell.self, forCellReuseIdentifier: "cell")
         tableView.dataSource = self
         tableView.delegate = self
+        refreshControl.attributedTitle = NSAttributedString(string: "Pull down to refresh")
+        refreshControl.addTarget(self, action: #selector(self.refresh(_:)), for: .valueChanged)
+        tableView.addSubview(refreshControl)
         
         tableView.snp.makeConstraints { make in
             make.center.height.width.equalToSuperview()
@@ -36,7 +40,22 @@ class ViewController: UIViewController {
             
             self.tableView.reloadData()
         }
+        
     }
+    
+    @objc func refresh(_ sender: AnyObject) {
+        print("Refresh")
+        viewModel.fetchCrypto { cryptos in
+            self.cryptosArray = cryptos
+            for (index, _) in cryptos.enumerated() {
+                self.cryptosArray[index] = cryptos[index]
+            }
+            
+            self.tableView.reloadData()
+            self.refreshControl.endRefreshing()
+        }
+    }
+    
 }
 
 extension ViewController: UITableViewDataSource {
